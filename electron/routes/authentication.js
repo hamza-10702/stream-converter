@@ -129,6 +129,16 @@ router.post("/api/user/broadcast-access", async (req, res, next) => {
     res.status(500).send("Server error occurred while updating user");
   }
 });
+// router.get("/api/user/help", async (req, res, next) => {
+ 
+//   try {
+   
+//     res.json({data : "secure Data"});
+//   } catch (error) {
+//     console.error(error.message);
+//     res.status(500).send("Server error occurred while updating user");
+//   }
+// });
 
 
 export default router;

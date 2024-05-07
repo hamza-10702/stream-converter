@@ -2,22 +2,23 @@
 import child_process from "child_process"; // To be used later for running FFmpeg
 import express from "express";
 import { Server } from "socket.io";
+import fs from "fs";
+import path from "path";
+import https from "https";
 import cors from "cors";
-
-
 
 require("dotenv").config();
 
+import { inputSettings, youtubeSettings } from "./ffmpeg";
 
-
-import {inputSettings,  youtubeSettings} from "./ffmpeg"
-
-const expressApp = express()
+const expressApp = express();
 
 expressApp.use(cors());
 expressApp.use(express.static("public"));
 expressApp.use(express.json({ limit: "200mb", extended: true }));
-expressApp.use(express.urlencoded({ limit: "200mb", extended: true, parameterLimit: 50000 }));
+expressApp.use(
+  express.urlencoded({ limit: "200mb", extended: true, parameterLimit: 50000 })
+);
 
 import authenticationRouter from "./routes/authentication.js";
 import broadcastsRouter from "./routes/broadcasts.js";
@@ -66,7 +67,16 @@ const WS_PORT = process.env.PORT || 3001;
 //   console.log(`Listening on PORT ${WS_PORT} for websockets`)
 // })
 
-const io = new Server(3001, {
+const options = {
+  key: fs.readFileSync(path.join(__dirname, "../", "./electron/cert/key.pem")),
+  cert: fs.readFileSync(
+    path.join(__dirname, "../", "./electron/cert/cert.pem")
+  ),
+};
+
+const sslServer = https.createServer(options, expressApp);
+
+const io = new Server(sslServer, {
   /* options */
   cors: {
     origin: "*",
@@ -123,7 +133,9 @@ io.on("connection", (socket) => {
 
   // If FFmpeg stops for any reason, close the WebSocket connection.
   ffmpeg.on("close", (code, signal) => {
-    console.log("FFmpeg child process closed, code " + code + ", signal " + signal);
+    console.log(
+      "FFmpeg child process closed, code " + code + ", signal " + signal
+    );
     // ws.terminate()
   });
 
@@ -156,4 +168,4 @@ io.on("connection", (socket) => {
 });
 
 // httpServer.listen(3001);
-export default expressApp
+export default sslServer;

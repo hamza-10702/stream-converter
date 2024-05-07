@@ -1,8 +1,6 @@
 import { app, BrowserWindow } from "electron";
 import path from "path";
-import fs from 'fs'
-import https from 'https'
-import expressApp from "./server"
+import sslServer from "./server"
 
 
 // The built directory structure
@@ -58,14 +56,9 @@ app.on("window-all-closed", () => {
     win = null;
   }
 });
-console.log('dir' , __dirname);
-const options = {
-  key: fs.readFileSync(path.join(__dirname, '../', './electron/cert/key.pem')),
-  cert: fs.readFileSync(path.join(__dirname,  '../', './electron/cert/cert.pem'))
-}
 
-const sslServer = https.createServer(options, expressApp);
-const PORT = 1337;
+
+const PORT = 3002;
 
 sslServer.listen(PORT, () => {
   console.log(`Secure server is listening on port ${PORT}`);
